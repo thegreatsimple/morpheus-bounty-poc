@@ -1,4 +1,32 @@
-No files changed, compilation skipped
+Compiling 3 files with Solc 0.8.24
+Solc 0.8.24 finished in 21.51s
+Compiler run successful with warnings:
+Warning (2072): Unused local variable.
+   --> test/BuildersSubnetFrontrun.t.sol:192:12:
+    |
+192 |         (, uint256 rateAtDeposit, uint256 totalDepositedAfter,) = builders.allSubnetsData();
+    |            ^^^^^^^^^^^^^^^^^^^^^
+
+
+Ran 1 test for test/BuildersSubnetFrontrun.t.sol:BuildersSubnetFrontrun
+[PASS] test_SubnetFrontrun_CapturesVictimEmission() (gas: 1357642)
+Logs:
+  subnetCreationFeeAmount : 0
+  networkShare (80% = 8e24): 8000000000000000000000000
+  global totalDeposited   : 2925453524750136039471953
+  global rate             : 10991073655574023039144235
+  undistributed/claimed   : 0 667860999853876693405310
+  totalDeposited after victim deposit: 2935453524750136039471953
+  bucket-3 raw emission over 1d      : 2864590595651634113888
+  rewardForSubnets (x networkShare) : 2291672476521307291110
+  expected emission from VICTIM stake: 7806877053917496490
+  subnet pendingRewards (view)      : 7806877053917496490
+  MOR received by ATTACKER claimAdmin: 7806877053917496490
+  === P2-1 confirmed: free unpermissioned createSubnet ==
+  === front-run -> victim stake -> attacker claims emission ===
+  attacker total cost for the whole attack (MOR): 0
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 238.47ms (7.87ms CPU time)
 
 Ran 1 test for test/LumerinSessionPoC.t.sol:LumerinSessionPoC
 [PASS] test_PoC_FabricatedSession_DrainsFundingAccount() (gas: 2665309)
@@ -14,7 +42,7 @@ Logs:
   profit per cycle / recycled stake (bps): 29
   fundingAccount drainable cycles remaining: 2981
 
-Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 135.87ms (9.35ms CPU time)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 243.76ms (13.79ms CPU time)
 
 Ran 2 tests for test/MorCapitalPoC.t.sol:MorCapitalPoC
 [PASS] test_PoC_SelfReferral_MintsExtraRewards() (gas: 2971650)
@@ -37,6 +65,6 @@ Logs:
   VICTIM LOSS MOR (honest staker dilution): 32484370731424953411
   stolen value USD (18 dec): 326253415194801890296
 
-Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 320.76ms (49.74ms CPU time)
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 360.24ms (36.79ms CPU time)
 
-Ran 2 test suites in 340.84ms (456.63ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
+Ran 3 test suites in 381.86ms (842.47ms CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)

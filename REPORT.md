@@ -175,3 +175,37 @@ Pinned blocks: Ethereum **26,321,432**, Base **53,383,498**. Attacker = fresh ad
 **Chain potential:** F-1×F-2 compound (self-referral increases the share of donation-stolen emissions); F-1 and F-3 both convert attacker capital into protocol-value extraction at positive expected value at current on-chain parameters.
 
 **Honest confidence statement:** F-1/F-2/F-3 mechanics and loss figures are reproduced by passing fork tests with on-chain state; the two residual risks are (a) program-side de-duplication judgments (C4 LOW-01 adjacency for F-1; unreadable V5 referral audit for F-2) and (b) the design-intent argument for F-3. SessionRouter byte-level source match is strongly supported (deployed behavior + 4/5 sibling facets byte-exact) but not completed.
+
+---
+
+# Pass 2 addendum (2026-11-02)
+
+Second-pass review covering the Builder protocol, cross-chain contracts (L1SenderV2/L2MessageReceiver/L2TokenReceiverV2/MOROFT), ChainLinkDataConsumer, RewardPool curve math, plus adversarial red-teaming of F-1/F-3. Note: the public SmartContracts repo tops out at Builders **V3**; the BuildersV4 analysis below uses the Sourcify-matched deployed source.
+
+## P2-1 — BuildersV4 subnet front-running → emission capture — **VERIFIED (fork PoC)**
+
+`createSubnet(Subnet,SubnetMetadata)` (BuildersV4.sol:194-217) is unpermissioned — `_validateSubnet` (:243-251) has no `admin == msg.sender` check — and `subnetCreationFeeAmount() == 0` live (FeeConfig), so subnet creation is free. An attacker front- registers a subnet name a victim intends to use; the victim stakes via the normal `deposit()` flow (:280-297); each subnet's reward share is weighted by `subnetsData[id].deposited` (:361-413); `claim(bytes32,address)` (:326-352) pays ALL pending subnet rewards to the subnet admin/claimAdmin (FEE_CLAIM_OPERATION fee == 0 live).
+
+**Measured (Base fork @ block 53,418,336):** zero-MOR attacker registers "PrettyLegitSubnet"; victim deposits 10,000 MOR; one day later attacker's `claim` receives **7.807 MOR — 100% of the victim-generated emission** (matches `getCurrentSubnetRewards` and closed-form curve math to 0.01%). ≈0.78 MOR/day per 10k MOR victim stake (80% networkShare × stake share of live ~2.93M MOR totalDeposited). Victim principal intact (7-day lock) — reward-stream capture only.
+**PoC:** `test/BuildersSubnetFrontrun.t.sol` — `test_SubnetFrontrun_CapturesVictimEmission` (passes; no privileged pranks).
+**Fix:** gate `createSubnet` on `admin == msg.sender` (or signature), and/or set `subnetCreationFeeAmount > 0` so name-squatting carries real cost.
+
+## P2-2 — ChainLinkDataConsumer multi-feed `res_ == 0` sentinel (Info)
+
+The zero sentinel for "feed not set" can in principle re-base on a feed that legitimately returns 0; unreachable with the live wBTC (BTC,BTC/USD) configuration. Informational only.
+
+## P2-3 — DistributorV2 unbounded Arbitrum mint delegation (Info, defense-in-depth)
+
+DistributorV2.sol:496-506 delegates unbounded MOR minting on Arbitrum to every owner-registered pool (one hop from critical if any pool registration becomes attacker-influenced). Defense-in-depth note only — owner is a trusted role.
+
+## Red-team verification of F-1 and F-3 (strengthens the originals)
+
+- **F-1:** the donation is fully recoverable (NONE-pool surplus swept via transfer, DistributorV2.sol:532-538; AAVE-pool aTokens withdrawn via pool, :523-531) and there is no self-counting — `supply()` measures the yield-token balance BEFORE the stake transfer is pulled in (:290-297 vs :411-416), so the attacker's own stake never contaminates the measured yield delta. No counterargument survived.
+- **F-3:** nothing on-chain binds consumer ≠ provider — `_extractProviderApproval` (SessionRouter.sol:193-196) decodes the consumer address from the provider-signed approval and DISCARDS it; `_isValidProviderReceipt` (:537-560) authenticates the provider only. The self-dealing loop is fully reachable on deployed bytecode.
+
+## Verified-no-bug notes (recorded to save reviewers time)
+
+- LZ v1 packet forgery impossible: packet `srcAddress` is the DVN-proven `msg.sender` of `Endpoint.send`; app check (`sender == L1SenderV2`) sound; gateway config matches official LZ tables; Arbitrum supply ≈ emission curve.
+- MOROFT peer wiring complete on all three chains (an earlier "unset peer" observation was a wrong-EID artifact).
+- RewardPool/LinearDistributionIntervalDecrease curve math: 140k-window property test vs exact integral — zero over-issuance/superadditivity; all rounding floors.
+- BuildersV4 rate accounting conserves rewards exactly under the deposit/claim flows exercised; no donation vector found beyond P2-1.
