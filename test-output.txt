@@ -1,0 +1,42 @@
+No files changed, compilation skipped
+
+Ran 1 test for test/LumerinSessionPoC.t.sol:LumerinSessionPoC
+[PASS] test_PoC_FabricatedSession_DrainsFundingAccount() (gas: 2665309)
+Logs:
+  0x404d699afd0e22f1ab912c0568b498b991741480482b3c818c8a2bd6185d522f
+  session duration (s): 3600
+  user stake locked (MOR): 10000000000000000000000
+  MOR paid by fundingAccount to fabricated provider: 29207262633935138671
+  of which user-stake recycle at close: 1031071
+  TREASURY THEFT (provider payment): 29207262633934107600
+  on-hold stake recycled (MOR): 0
+  attacker net profit (MOR): 10029907262633934107600
+  profit per cycle / recycled stake (bps): 29
+  fundingAccount drainable cycles remaining: 2981
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 135.87ms (9.35ms CPU time)
+
+Ran 2 tests for test/MorCapitalPoC.t.sol:MorCapitalPoC
+[PASS] test_PoC_SelfReferral_MintsExtraRewards() (gas: 2971650)
+Logs:
+  self-referrer amountStaked (own deposit): 999999999999999999996
+  self-referrer virtualStaked (15% tier): 149999999999999999999
+  --- one distribution period, identical 1,000 stETH stakes ---
+  attacker MOR gained (user + own-referrer streams): 233954816005247068086
+  control  MOR gained (no referrer): 201685186211419886282
+  attacker uplift (bps): 1599
+
+[PASS] test_PoC_YieldDonation_StealsEmissionShare() (gas: 5755666)
+Logs:
+  --- one distribution period (~1 day of MOR emission) ---
+  attacker MOR gained WITHOUT donation: 60544102116205795176
+  attacker MOR gained WITH donation: 441681269399852863279
+  honest staker MOR gained WITHOUT donation: 222335648212504186567
+  honest staker MOR gained WITH donation: 189851277481079233156
+  STOLEN MOR (attacker over-accrual): 381137167283647068103
+  VICTIM LOSS MOR (honest staker dilution): 32484370731424953411
+  stolen value USD (18 dec): 326253415194801890296
+
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 320.76ms (49.74ms CPU time)
+
+Ran 2 test suites in 340.84ms (456.63ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
